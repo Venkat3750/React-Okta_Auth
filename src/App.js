@@ -1,46 +1,34 @@
-import React, { Component } from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
-import { Security, SecureRoute, ImplicitCallback } from '@okta/okta-react';
+import React from "react";
+import { Route, Switch, useHistory } from "react-router-dom";
+import { SecureRoute, Security, LoginCallback } from "@okta/okta-react";
+import { OktaAuth } from "@okta/okta-auth-js";
+import Home from "./Components/Home.jsx";
+import About from "./Components/About.jsx";
+import Login from "./Components/Login.jsx";
 
-import Navbar from './components/layout/Navbar';
-import Home from './components/pages/Home';
-import Staff from './components/pages/Staff';
-import Login from './components/auth/Login';
+const oktaAuth = new OktaAuth({
+  issuer: "https://dev-189439.okta.com/oauth2/default",
+  clientId: "0oa1c6zndFpgLjH7J5d6",
+  redirectUri: window.location.origin + "/implicit/callback",
+});
 
-import './App.css';
+const App = (props) => {
+  // const history = useHistory();
 
-function onAuthRequired({ history }) {
-  history.push('/login');
-}
+  // const customAuthHandler = (oktaAuth) => {
+  //   history.push("/implicit");
+  // };
 
-class App extends Component {
-  render() {
-    return (
-      <Router>
-        <Security
-          issuer="https://dev-409495.oktapreview.com/oauth2/default"
-          client_id="0oafhkg1yupTnPW9z0h7"
-          redirect_uri={window.location.origin + '/implicit/callback'}
-          onAuthRequired={onAuthRequired}
-        >
-          <div className="App">
-            <Navbar />
-            <div className="container">
-              <Route path="/" exact={true} component={Home} />
-              <SecureRoute path="/staff" exact={true} component={Staff} />
-              <Route
-                path="/login"
-                render={() => (
-                  <Login baseUrl="https://dev-409495.oktapreview.com" />
-                )}
-              />
-              <Route path="/implicit/callback" component={ImplicitCallback} />
-            </div>
-          </div>
-        </Security>
-      </Router>
-    );
-  }
-}
+  return (
+    <Switch>
+      <Security oktaAuth={oktaAuth} >
+        <SecureRoute exact path="/" component={Home} />
+        <Route path="/implicit/callback" component={LoginCallback} />
+        <Route exact path="/implicit" component={Login} />
+        <SecureRoute exact path="/about" component={About} />
+      </Security>
+    </Switch>
+  );
+};
 
 export default App;
